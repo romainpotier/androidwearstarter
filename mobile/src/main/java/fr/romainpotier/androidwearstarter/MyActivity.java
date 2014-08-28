@@ -35,6 +35,9 @@ public class MyActivity extends ActionBarActivity {
 
     private GoogleApiClient mGoogleAppiClient;
 
+    // Données synchronisées
+    private PutDataMapRequest dataMapRequest;
+
     @RestService
     CoffeeService coffeeService;
 
@@ -47,7 +50,7 @@ public class MyActivity extends ActionBarActivity {
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle connectionHint) {
-
+                        Log.d(TAG, "onConnected()");
                     }
                     @Override
                     public void onConnectionSuspended(int cause) {
@@ -71,13 +74,19 @@ public class MyActivity extends ActionBarActivity {
         new MyAsync().execute();
     }
 
-    private class MyAsync extends AsyncTask<Void, Void, Void> {
+    private class MyAsync extends AsyncTask<Void, Void, Record> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Record doInBackground(Void... params) {
 
             // Récupération liste des cafés
             final Record record = coffeeService.getCoffees().getRecords().get(0);
+
+            return record;
+        }
+
+        @Override
+        protected void onPostExecute(Record record) {
             final String coffeeName = record.getFields().getNom();
             final List<String> coordinates = Lists.transform(record.getGeometry().getCoordinates(), new Function<Double, String>() {
 
@@ -87,14 +96,11 @@ public class MyActivity extends ActionBarActivity {
                 }
             });
 
-            final PutDataMapRequest dataMapRequest = PutDataMapRequest.create("/message/coffee");
+            dataMapRequest = PutDataMapRequest.create("/message/coffee");
             final DataMap dataMap = dataMapRequest.getDataMap();
             dataMap.putString("COFFEE_NAME", coffeeName);
             dataMap.putStringArrayList("COFFEE_COORDINATES", Lists.newArrayList(coordinates));
-
             Wearable.DataApi.putDataItem(mGoogleAppiClient, dataMapRequest.asPutDataRequest());
-
-            return null;
         }
     }
 

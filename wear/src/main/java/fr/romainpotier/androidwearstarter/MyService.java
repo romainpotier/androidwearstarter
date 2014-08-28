@@ -32,10 +32,12 @@ public class MyService extends WearableListenerService {
 
     private final static String TAG = "MyTag";
 
+    private GoogleApiClient mGoogleApiClient;
+
     @Override
     public void onCreate() {
         super.onCreate();
-        final GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .build();
     }
@@ -83,6 +85,5 @@ public class MyService extends WearableListenerService {
 
         notificationManager.notify(notificationId, notificationBuilder.build());
     }
-
 
 }
